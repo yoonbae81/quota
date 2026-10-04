@@ -40,6 +40,7 @@ jobs:
           set -euo pipefail
           umask 077
           printf '%s\n' "$SSH_KEY" | tr -d '\r' > "$RUNNER_TEMP/ssh_key"
+          ssh-keygen -y -f "$RUNNER_TEMP/ssh_key" | ssh-keygen -lf -
           if [ -n "$KNOWN_HOSTS" ]; then
             printf '%s\n' "$KNOWN_HOSTS" > "$RUNNER_TEMP/known_hosts"
             CHECK=yes
