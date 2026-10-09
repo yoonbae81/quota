@@ -2,9 +2,11 @@
 
 Query LLM usage quota limits across providers from one place and output calculated metrics in JSON format.
 
-**Live deployment:** https://zai-quota.y-e2f.workers.dev/quota — runs as a Cloudflare Worker (TypeScript). The Python CLI/server in `src/` remains for local use.
+**Live deployment:** https://xcv.kr/quota — runs as a Cloudflare Worker (TypeScript). The Python CLI/server in `src/` remains for local use.
 
-- Production: `https://zai-quota.y-e2f.workers.dev/quota` (aggregate), `https://zai-quota.y-e2f.workers.dev/quota/zai` (single provider)
+- Production: `https://xcv.kr/quota` (aggregate), `https://xcv.kr/quota/zai` (single provider)
+  - Also available at `https://zai-quota.y-e2f.workers.dev/quota`
+  - Custom-domain routing: Workers route `xcv.kr/quota*` requires the root DNS record to be **Proxied** (orange cloud)
 - Deploys: push to `main` → GitHub Actions runs typecheck + `wrangler deploy`
 - Local dev: `npm install && npm run dev` (requires `wrangler login`; set `ZAI_API_KEY` via `npx wrangler secret put ZAI_API_KEY`)
 
@@ -108,7 +110,7 @@ curl http://localhost:9999/quota/zai
 ```
 
 **Production (Cloudflare Worker):** the same routes are live at
-`https://zai-quota.y-e2f.workers.dev/quota` and `https://zai-quota.y-e2f.workers.dev/quota/zai`.
+`https://xcv.kr/quota` and `https://xcv.kr/quota/zai` (also at `https://zai-quota.y-e2f.workers.dev`).
 
 If HAProxy (or any reverse proxy) forwards additional paths, list them in `BASE_URL_ALIASES`. For example, with `BASE_URL=/quota` and `BASE_URL_ALIASES=/zai-quota`, both `/quota` and `/zai-quota` work identically. (On the Worker, the same options are set in `wrangler.toml` `[vars]`.)
 
