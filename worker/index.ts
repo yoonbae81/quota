@@ -217,7 +217,15 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
   try {
     const apiKey = env[provider.envKey] || "";
     const metrics = await provider.fetch(apiKey);
-    return jsonResponse(200, metrics);
+    const body: Record<string, unknown> = {
+      quotaPercentage: metrics.quotaPercentage,
+    };
+    if (metrics.nextResetMs) {
+      const resetInfo = formatResetInfo(metrics.nextResetMs, nowMs / 1000);
+      body.nextReset = resetInfo.nextReset;
+      body.remainingTime = resetInfo.remainingTime;
+    }
+    return jsonResponse(200, body);
   } catch (err) {
     return jsonResponse(500, {
       error: err instanceof Error ? err.message : String(err),
