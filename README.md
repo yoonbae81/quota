@@ -137,6 +137,20 @@ systemctl --user restart quota.service
 
 The systemd service runs the web server continuously with auto-restart on failure. Port is configured via the `PORT` environment variable in `.env` (default: 9999).
 
+### xcv.kr Routing Map
+
+| Path         | Served by |
+|--------------|-----------|
+| `/quota`     | Cloudflare Worker (`worker/`) — https://xcv.kr/quota |
+| `/hwpx`      | Cloudflare Worker (`gateway/`) → md2hwpx.vercel.app |
+| `/mask`      | Cloudflare Worker (`gateway/`) → mask-eta.vercel.app |
+| `/blog`      | Caddy → xcvkr.vercel.app |
+| `/math`      | Caddy → 10.0.0.2:3141 |
+| `/pe-gtd`    | Caddy → 10.0.0.2:7000 |
+| `/shs-exams` | Caddy → 10.0.0.2:8767 |
+
+`quota`, `hwpx`, and `mask` no longer depend on the Caddy gateway host — they run entirely on Cloudflare Workers.
+
 ## Adding a New Provider
 
 1. Create `src/providers/<name>.py` with a `QuotaProvider` subclass:
