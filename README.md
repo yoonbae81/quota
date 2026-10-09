@@ -2,16 +2,20 @@
 
 Query LLM usage quota limits across providers from one place and output calculated metrics in JSON format.
 
-Built with the Python standard library only — no external dependencies.
+**Live deployment:** https://zai-quota.y-e2f.workers.dev/quota — runs as a Cloudflare Worker (TypeScript). The Python CLI/server in `src/` remains for local use.
+
+- Production: `https://zai-quota.y-e2f.workers.dev/quota` (aggregate), `https://zai-quota.y-e2f.workers.dev/quota/zai` (single provider)
+- Deploys: push to `main` → GitHub Actions runs typecheck + `wrangler deploy`
+- Local dev: `npm install && npm run dev` (requires `wrangler login`; set `ZAI_API_KEY` via `npx wrangler secret put ZAI_API_KEY`)
 
 ## Features
 
 - Provider-based architecture: adding a new LLM provider takes one small module
 - Comprehensive view: all configured providers in a single JSON response
 - Per-provider endpoints with normalized output (`quotaPercentage`, `nextReset`, `remainingTime`)
-- Run as CLI tool or web server
+- Cloudflare Worker deployment (TypeScript, no server to maintain)
+- Local CLI / web server mode (Python standard library only)
 - Reverse-proxy friendly (`BASE_URL` / `BASE_URL_ALIASES`)
-- systemd service automation (web server mode)
 
 ## Providers
 
@@ -21,11 +25,31 @@ Built with the Python standard library only — no external dependencies.
 
 ## Installation
 
-### Prerequisites
+### Cloudflare Worker (production)
+
+```bash
+# Install dependencies
+npm install
+
+# Login to Cloudflare (once)
+npx wrangler login
+
+# Set the provider API key as a Worker secret (once)
+npx wrangler secret put ZAI_API_KEY
+
+# Deploy manually (CI does this automatically on push to main)
+npm run deploy
+```
+
+GitHub Actions requires the repository secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`.
+
+### Python CLI / local server
+
+#### Prerequisites
 
 - Python 3.9 or higher
 
-### Setup
+#### Setup
 
 ```bash
 # Clone repository
@@ -83,7 +107,10 @@ curl http://localhost:9999/quota
 curl http://localhost:9999/quota/zai
 ```
 
-If HAProxy (or any reverse proxy) forwards additional paths, list them in `BASE_URL_ALIASES`. For example, with `BASE_URL=/quota` and `BASE_URL_ALIASES=/zai-quota`, both `/quota` and `/zai-quota` work identically.
+**Production (Cloudflare Worker):** the same routes are live at
+`https://zai-quota.y-e2f.workers.dev/quota` and `https://zai-quota.y-e2f.workers.dev/quota/zai`.
+
+If HAProxy (or any reverse proxy) forwards additional paths, list them in `BASE_URL_ALIASES`. For example, with `BASE_URL=/quota` and `BASE_URL_ALIASES=/zai-quota`, both `/quota` and `/zai-quota` work identically. (On the Worker, the same options are set in `wrangler.toml` `[vars]`.)
 
 Unknown paths return `404` with a JSON error. A failing provider never breaks the comprehensive view — it is reported with a per-provider `status`.
 
@@ -204,27 +231,30 @@ Per-provider `status` is one of `ok`, `not_configured`, or `error` (with an `err
 
 ```
 quota/
-├── src/                    # Source code
+├── worker/                 # Cloudflare Worker (TypeScript, production)
+│   ├── index.ts            # HTTP routing, aggregation, JSON responses
+│   └── providers/          # Provider framework
+│       ├── base.ts         # QuotaProvider interface + helpers
+│       └── zai.ts          # Z.ai provider
+├── wrangler.toml           # Worker config (name, vars, routes)
+├── package.json            # npm scripts: dev / deploy / typecheck
+├── src/                    # Python CLI / local server
 │   ├── main.py             # HTTP server, routing, CLI
 │   └── providers/          # Provider framework
 │       ├── __init__.py     # Provider registry
 │       ├── base.py         # QuotaProvider ABC + QuotaMetrics
 │       └── zai.py          # Z.ai provider
-├── tests/                  # Test suite
+├── tests/                  # Python test suite
 │   ├── __init__.py
 │   ├── test_main.py
 │   ├── test_server_routing.py
 │   └── README.md
-├── scripts/                # Setup and deployment scripts
+├── scripts/                # Local setup scripts
 │   ├── setup-env.sh        # Environment setup
-│   ├── install-systemd.sh  # systemd service installation
 │   ├── run.sh              # Main execution script
-│   └── systemd/            # systemd configuration files
+│   └── systemd/            # systemd configuration files (local server)
 │       └── quota.service
-├── .venv/                  # Python virtual environment
-├── .env                    # Environment variables (private)
 ├── .env.example            # Environment variable template
-├── requirements.txt        # Python dependencies (stdlib only)
 ├── .gitignore              # Git ignore file
 └── README.md               # This file
 ```
