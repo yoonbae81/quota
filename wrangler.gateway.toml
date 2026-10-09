@@ -1,0 +1,13 @@
+name = "xcvkr-gateway"
+main = "gateway/worker.ts"
+compatibility_date = "2024-01-01"
+workers_dev = false
+
+# Routes are attached via the dashboard/CI for:
+#   xcv.kr/hwpx*
+#   xcv.kr/mask*
+# (routes are zone-scoped and managed with `wrangler deploy`; see README)
+routes = [
+  { pattern = "xcv.kr/hwpx*", zone_name = "xcv.kr" },
+  { pattern = "xcv.kr/mask*", zone_name = "xcv.kr" },
+]
