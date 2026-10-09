@@ -1,0 +1,17 @@
+name = "zai-quota"
+main = "worker/index.ts"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Variable bindings. These are readonly, e.g. env.ZAI_API_KEY in your code.
+# Configure via `npx wrangler secret put ZAI_API_KEY`
+[vars]
+BASE_URL = "/quota"
+BASE_URL_ALIASES = ""
+
+# Automatically place your work in a recent worker for easy testing
+workers_dev = true
+
+[[rules]]
+type = "ESModule"
+globs = ["**/*.ts"]

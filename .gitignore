@@ -27,3 +27,7 @@ Thumbs.db
 data/
 logs/
 *.log
+
+# Node / Cloudflare Worker
+node_modules/
+.wrangler/

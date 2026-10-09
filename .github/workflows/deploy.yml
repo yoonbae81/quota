@@ -15,46 +15,23 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    env:
-      HOST: ${{ vars.HOST || '10.0.0.9' }}
-      USER: ${{ vars.USER }}
-      KNOWN_HOSTS: ${{ vars.KNOWN_HOSTS }}
-
+    timeout-minutes: 10
     steps:
-      - name: Connect WireGuard
-        env:
-          WG_CONFIG: ${{ secrets.WG_CONFIG }}
-        run: |
-          set -euo pipefail
-          sudo apt-get update && sudo apt-get install -y wireguard-tools
-          umask 077
-          printf '%s\n' "$WG_CONFIG" | tr -d '\r' | grep -viE '^\s*DNS\s*=' > "$RUNNER_TEMP/wg.conf"
-          ! grep -qE 'AllowedIPs.*(0\.0\.0\.0/0|::/0)' "$RUNNER_TEMP/wg.conf"
-          sudo wg-quick up "$RUNNER_TEMP/wg.conf"
+      - uses: actions/checkout@v4
 
-      - name: Deploy on sync
-        env:
-          SSH_KEY: ${{ secrets.SSH_KEY }}
-        run: |
-          set -euo pipefail
-          umask 077
-          printf '%s\n' "$SSH_KEY" | tr -d '\r' > "$RUNNER_TEMP/ssh_key"
-          ssh-keygen -y -f "$RUNNER_TEMP/ssh_key" | ssh-keygen -lf -
-          if [ -n "$KNOWN_HOSTS" ]; then
-            printf '%s\n' "$KNOWN_HOSTS" > "$RUNNER_TEMP/known_hosts"
-            CHECK=yes
-          else
-            CHECK=accept-new
-          fi
-          ssh -i "$RUNNER_TEMP/ssh_key" \
-            -o BatchMode=yes -o IdentitiesOnly=yes -o ConnectTimeout=15 \
-            -o "StrictHostKeyChecking=$CHECK" \
-            -o "UserKnownHostsFile=$RUNNER_TEMP/known_hosts" \
-            "$USER@$HOST" 'bash /opt/quota/scripts/deploy.sh'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
 
-      - name: Disconnect and clean up
-        if: always()
-        run: |
-          sudo wg-quick down "$RUNNER_TEMP/wg.conf" || true
-          rm -f "$RUNNER_TEMP"/{wg.conf,ssh_key,known_hosts}
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npx tsc -p tsconfig.json --noEmit
+
+      - name: Deploy to Cloudflare Workers
+        run: npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
