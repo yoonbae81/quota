@@ -14,8 +14,11 @@ export function formatResetInfo(nextResetMs: number, nowTs?: number): {
 } {
   const now = nowTs ?? Date.now() / 1000;
   const nextResetDt = new Date(nextResetMs);
-  const hh = String(nextResetDt.getUTCHours()).padStart(2, "0");
-  const mm = String(nextResetDt.getUTCMinutes()).padStart(2, "0");
+  // KST (UTC+9): shift by +9h then read UTC fields
+  const kstMs = nextResetMs + 9 * 3600 * 1000;
+  const kst = new Date(kstMs);
+  const hh = String(kst.getUTCHours()).padStart(2, "0");
+  const mm = String(kst.getUTCMinutes()).padStart(2, "0");
   const nextReset = `${hh}:${mm}`;
 
   const diffSec = Math.max(0, nextResetMs / 1000 - now);

@@ -154,8 +154,10 @@ async function buildComprehensiveView(env: Env, nowMs: number): Promise<Record<s
     providers[provider.name] = await buildProviderStatus(provider, env, nowMs);
   }
 
+  // generatedAt in KST (UTC+9), 24h format: YYYY-MM-DDTHH:MM:SS+09:00
+  const genKst = new Date(nowMs + 9 * 3600 * 1000);
   return {
-    generatedAt: new Date(nowMs).toISOString().replace(/\.\d{3}Z$/, "Z"),
+    generatedAt: genKst.toISOString().replace(/\.\d{3}Z$/, "+09:00"),
     providers,
   };
 }
