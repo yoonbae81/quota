@@ -169,7 +169,10 @@ async function buildComprehensiveView(env: Env, nowMs: number): Promise<Record<s
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body, null, 2), {
     status,
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store",
+    },
   });
 }
 
