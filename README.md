@@ -7,7 +7,7 @@ Query LLM usage quota limits across providers from one place and output calculat
 - Production: `https://xcv.kr/quota` (aggregate), `https://xcv.kr/quota/zai` (single provider)
   - Also available at `https://quota.y-e2f.workers.dev/quota` (worker renamed `zai-quota` → `quota` on 2026-10-18)
   - Custom-domain routing: Workers route `xcv.kr/quota*` requires the root DNS record to be **Proxied** (orange cloud)
-- Deploys: push to `main` → GitHub Actions runs typecheck + `wrangler deploy`
+- Deploys: push to `main` → Cloudflare Workers Builds (Git integration) auto-builds & deploys; GitHub Actions only runs typecheck
 - Local dev: `npm install && npm run dev` (requires `wrangler login`; set `ZAI_API_KEY` via `npx wrangler secret put ZAI_API_KEY`)
 
 ## Features

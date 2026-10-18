@@ -1,19 +1,20 @@
-name: Deploy
+name: CI
 
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: deploy-${{ github.repository }}
-  cancel-in-progress: false
+  group: ci-${{ github.repository }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  deploy:
+  typecheck:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -30,13 +31,6 @@ jobs:
       - name: Typecheck
         run: npx tsc -p tsconfig.json --noEmit
 
-      - name: Deploy to Cloudflare Workers
-        run: npx wrangler deploy
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-
-      # 2026-10-18: gateway worker (xcvkr-gateway) deleted — xcv.kr/hwpx* is bound
-      # directly to the md2hwpx worker and xcv.kr/mask* moved to the Caddy origin.
-      # Do NOT redeploy wrangler.gateway.toml; it would recreate the worker and
-      # steal those routes back. See wrangler.gateway.toml DEPRECATED banner.
+# Deployment moved to Cloudflare Workers Builds (Git integration, 2026-10-18).
+# Do NOT add a `wrangler deploy` step here — it would race with Workers Builds
+# on every push. The repo no longer holds CLOUDFLARE_API_TOKEN secrets.
