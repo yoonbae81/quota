@@ -142,7 +142,7 @@ The systemd service runs the web server continuously with auto-restart on failur
 | Path         | Served by |
 |--------------|-----------|
 | `/quota`     | Cloudflare Worker (`worker/`) — https://xcv.kr/quota |
-| `/hwpx`      | Cloudflare Worker (`gateway/`) → md2hwpx.vercel.app |
+| `/hwpx`      | Cloudflare Worker (`gateway/`) → Cloudflare Worker `md2hwpx` (2026-10-18까지 md2hwpx.vercel.app) |
 | `/mask`      | Cloudflare Worker (`gateway/`) → mask-eta.vercel.app |
 | `/blog`      | Caddy → xcvkr.vercel.app |
 | `/math`      | Caddy → 10.0.0.2:3141 |

@@ -1,20 +1,20 @@
 /**
- * xcv.kr gateway paths — reverse proxy to Vercel apps.
+ * xcv.kr gateway paths — reverse proxy.
  *
  * Routes handled (Workers routes on xcv.kr):
- *   xcv.kr/hwpx*  -> https://md2hwpx.vercel.app  (keeps /hwpx prefix)
+ *   xcv.kr/hwpx*  -> https://md2hwpx.y-e2f.workers.dev  (Cloudflare 파일럿 Worker, prefix 유지)
  *   xcv.kr/mask*  -> https://mask-eta.vercel.app (keeps /mask prefix)
  *
- * Both Vercel apps are built with their base path (/hwpx, /mask) baked in,
- * so path-preserving proxying works with no rewriting.
- *
- * Deployed separately from the quota worker; see wrangler.toml.
+ * mask Vercel 앱은 base path(/mask)가 내장되어 있어 path-preserving proxying에
+ * 재작성이 필요 없다. hwpx는 2026-10-18 운영 전환으로 Vercel(md2hwpx.vercel.app)
+ * 에서 Cloudflare Worker로 upstream을 바꿨다. 롤백 시 아래 UPSTREAMS의 host를
+ * md2hwpx.vercel.app으로 되돌리고 재배포한다(배포는 main push CI).
  */
 
 interface Env {}
 
 const UPSTREAMS: { pattern: RegExp; host: string }[] = [
-  { pattern: /^\/hwpx(\/|$)/, host: "md2hwpx.vercel.app" },
+  { pattern: /^\/hwpx(\/|$)/, host: "md2hwpx.y-e2f.workers.dev" },
   { pattern: /^\/mask(\/|$)/, host: "mask-eta.vercel.app" },
 ];
 
