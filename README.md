@@ -143,12 +143,12 @@ The systemd service runs the web server continuously with auto-restart on failur
 |--------------|-----------|
 | `/quota`     | Cloudflare Worker `quota` (`worker/`) — https://xcv.kr/quota |
 | `/hwpx`      | Cloudflare Worker `md2hwpx` 직결 (route `xcv.kr/hwpx*`, 2026-10-18부터) |
-| `/mask`      | Caddy(edge.xcv.kr) → mask-eta.vercel.app |
+| `/mask`      | Cloudflare Worker `mask` 직결 (route `xcv.kr/mask*`, 2026-10-18부터; CF static assets, mask 레포 배포) |
 | `/blog`      | Caddy → xcvkr.vercel.app |
 | `/math`      | Caddy → 10.0.0.9:3141 |
 | `/pe-gtd`    | Caddy → 10.0.0.2:7000 |
 
-`quota`는 Cloudflare Workers에서, `hwpx`는 md2hwpx Worker 라우트 직결로 동작한다. 구 `xcvkr-gateway` Worker(gateway/)는 2026-10-18 삭제됨 — `/hwpx*`는 md2hwpx로 재바인딩, `/mask*`는 Caddy origin으로 이관했다. `gateway/`·`wrangler.gateway.toml`은 폐기된 참고용 코드이며 다시 배포하지 않는다(배포 시 라우트를 되돌려 가져감).
+`quota`는 Cloudflare Workers에서, `hwpx`·`mask`는 각 Worker 라우트 직결로 동작한다. 구 `xcvkr-gateway` Worker(gateway/)는 2026-10-18 삭제됨 — `/hwpx*`는 md2hwpx로, `/mask*`는 mask Worker(CF static assets, 2026-10-18 웹 UI Vercel→Workers 전환)로 재바인딩했다. edge Caddy의 mask 프록시 블록도 같이 제거됐다. `gateway/`·`wrangler.gateway.toml`은 폐기된 참고용 코드이며 다시 배포하지 않는다(배포 시 라우트를 되돌려 가져감).
 
 ## Adding a New Provider
 

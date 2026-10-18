@@ -3,19 +3,20 @@
  *
  * Routes handled (Workers routes on xcv.kr):
  *   xcv.kr/hwpx*  -> https://md2hwpx.y-e2f.workers.dev  (Cloudflare 파일럿 Worker, prefix 유지)
- *   xcv.kr/mask*  -> https://mask-eta.vercel.app (keeps /mask prefix)
  *
- * mask Vercel 앱은 base path(/mask)가 내장되어 있어 path-preserving proxying에
- * 재작성이 필요 없다. hwpx는 2026-10-18 운영 전환으로 Vercel(md2hwpx.vercel.app)
- * 에서 Cloudflare Worker로 upstream을 바꿨다. 롤백 시 아래 UPSTREAMS의 host를
- * md2hwpx.vercel.app으로 되돌리고 재배포한다(배포는 main push CI).
+ * hwpx는 2026-10-18 운영 전환으로 Vercel(md2hwpx.vercel.app)에서 Cloudflare Worker로
+ * upstream을 바꿨다. 롤백 시 아래 UPSTREAMS의 host를 md2hwpx.vercel.app으로 되돌리고
+ * 재배포한다(배포는 main push CI).
+ *
+ * mask는 2026-10-18 CF static worker `mask`로 전환되며 gateway에서 완전히 빠졌다.
+ * xcv.kr/mask* 라우트는 mask 워커 직결(mask 레포 wrangler.jsonc routes), edge Caddy의
+ * mask 프록시 블록도 제거됐다. 이전 upstream은 mask-eta.vercel.app(Vercel, 롤백 대상).
  */
 
 interface Env {}
 
 const UPSTREAMS: { pattern: RegExp; host: string }[] = [
   { pattern: /^\/hwpx(\/|$)/, host: "md2hwpx.y-e2f.workers.dev" },
-  { pattern: /^\/mask(\/|$)/, host: "mask-eta.vercel.app" },
 ];
 
 function matchUpstream(pathname: string): string | undefined {
