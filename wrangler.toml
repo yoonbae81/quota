@@ -1,7 +1,14 @@
-name = "zai-quota"
+name = "quota"
 main = "worker/index.ts"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
+
+# Custom domain route: xcv.kr/quota* (zone-scoped, attached on `wrangler deploy`).
+# 2026-10-18: worker renamed zai-quota -> quota; the old xcv.kr/quota* route
+# rebinds to this worker on deploy and the zai-quota worker was deleted.
+routes = [
+  { pattern = "xcv.kr/quota*", zone_name = "xcv.kr" },
+]
 
 # Variable bindings. These are readonly, e.g. env.ZAI_API_KEY in your code.
 # Configure via `npx wrangler secret put ZAI_API_KEY`

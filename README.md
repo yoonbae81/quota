@@ -5,7 +5,7 @@ Query LLM usage quota limits across providers from one place and output calculat
 **Live deployment:** https://xcv.kr/quota — runs as a Cloudflare Worker (TypeScript). The Python CLI/server in `src/` remains for local use.
 
 - Production: `https://xcv.kr/quota` (aggregate), `https://xcv.kr/quota/zai` (single provider)
-  - Also available at `https://zai-quota.y-e2f.workers.dev/quota`
+  - Also available at `https://quota.y-e2f.workers.dev/quota` (worker renamed `zai-quota` → `quota` on 2026-10-18)
   - Custom-domain routing: Workers route `xcv.kr/quota*` requires the root DNS record to be **Proxied** (orange cloud)
 - Deploys: push to `main` → GitHub Actions runs typecheck + `wrangler deploy`
 - Local dev: `npm install && npm run dev` (requires `wrangler login`; set `ZAI_API_KEY` via `npx wrangler secret put ZAI_API_KEY`)
@@ -110,7 +110,7 @@ curl http://localhost:9999/quota/zai
 ```
 
 **Production (Cloudflare Worker):** the same routes are live at
-`https://xcv.kr/quota` and `https://xcv.kr/quota/zai` (also at `https://zai-quota.y-e2f.workers.dev`).
+`https://xcv.kr/quota` and `https://xcv.kr/quota/zai` (also at `https://quota.y-e2f.workers.dev`).
 
 If HAProxy (or any reverse proxy) forwards additional paths, list them in `BASE_URL_ALIASES`. For example, with `BASE_URL=/quota` and `BASE_URL_ALIASES=/zai-quota`, both `/quota` and `/zai-quota` work identically. (On the Worker, the same options are set in `wrangler.toml` `[vars]`.)
 
@@ -141,15 +141,14 @@ The systemd service runs the web server continuously with auto-restart on failur
 
 | Path         | Served by |
 |--------------|-----------|
-| `/quota`     | Cloudflare Worker (`worker/`) — https://xcv.kr/quota |
-| `/hwpx`      | Cloudflare Worker (`gateway/`) → Cloudflare Worker `md2hwpx` (2026-10-18까지 md2hwpx.vercel.app) |
-| `/mask`      | Cloudflare Worker (`gateway/`) → mask-eta.vercel.app |
+| `/quota`     | Cloudflare Worker `quota` (`worker/`) — https://xcv.kr/quota |
+| `/hwpx`      | Cloudflare Worker `md2hwpx` 직결 (route `xcv.kr/hwpx*`, 2026-10-18부터) |
+| `/mask`      | Caddy(edge.xcv.kr) → mask-eta.vercel.app |
 | `/blog`      | Caddy → xcvkr.vercel.app |
-| `/math`      | Caddy → 10.0.0.2:3141 |
+| `/math`      | Caddy → 10.0.0.9:3141 |
 | `/pe-gtd`    | Caddy → 10.0.0.2:7000 |
-| `/shs-exams` | Caddy → 10.0.0.2:8767 |
 
-`quota`, `hwpx`, and `mask` no longer depend on the Caddy gateway host — they run entirely on Cloudflare Workers.
+`quota`는 Cloudflare Workers에서, `hwpx`는 md2hwpx Worker 라우트 직결로 동작한다. 구 `xcvkr-gateway` Worker(gateway/)는 2026-10-18 삭제됨 — `/hwpx*`는 md2hwpx로 재바인딩, `/mask*`는 Caddy origin으로 이관했다. `gateway/`·`wrangler.gateway.toml`은 폐기된 참고용 코드이며 다시 배포하지 않는다(배포 시 라우트를 되돌려 가져감).
 
 ## Adding a New Provider
 

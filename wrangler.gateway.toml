@@ -3,6 +3,12 @@ main = "gateway/worker.ts"
 compatibility_date = "2024-01-01"
 workers_dev = false
 
+# DEPRECATED 2026-10-18 — this worker has been DELETED from Cloudflare.
+#   xcv.kr/hwpx* -> rebound directly to the `md2hwpx` worker
+#   xcv.kr/mask* -> moved to the Caddy origin (edge.xcv.kr, reverse_proxy to mask-eta.vercel.app)
+# Do NOT deploy this config again: it would recreate the worker and steal both
+# routes back. Kept only as reference; see README "xcv.kr Routing Map".
+
 # Routes are attached via the dashboard/CI for:
 #   xcv.kr/hwpx*
 #   xcv.kr/mask*
