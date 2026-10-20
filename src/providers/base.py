@@ -4,7 +4,7 @@ import os
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
 
@@ -31,8 +31,9 @@ def format_reset_info(next_reset_ms: int, now_ts: Optional[float] = None) -> dic
     """Convert an epoch-ms reset timestamp into nextReset / remainingTime."""
     if now_ts is None:
         now_ts = time.time()
-    next_reset_dt = datetime.fromtimestamp(next_reset_ms / 1000)
-    next_reset_str = next_reset_dt.strftime("%H:%M")
+    # Shift to KST (UTC+9) and format as ISO8601 with +09:00
+    kst_dt = datetime.fromtimestamp(next_reset_ms / 1000) + timedelta(hours=9)
+    next_reset_str = kst_dt.strftime("%Y-%m-%dT%H:%M:%S+09:00")
     diff_sec = max(0, (next_reset_ms / 1000) - now_ts)
     hours = int(diff_sec // 3600)
     minutes = int((diff_sec % 3600) // 60)
